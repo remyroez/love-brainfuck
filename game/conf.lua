@@ -13,8 +13,8 @@ if love.filesystem then
 	love.filesystem.setRequirePath("lib/?;lib/?.lua;lib/?/init.lua;" .. love.filesystem.getRequirePath())
 end
 
+-- https://love2d.org/wiki/Config_Files
 function love.conf(t)
-	-- https://love2d.org/wiki/Config_Files
-	t.identity = 'love-template'
+	t.identity = 'love-brainfuck'
 	t.version = '11.2'
 end
