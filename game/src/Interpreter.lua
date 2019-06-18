@@ -4,8 +4,85 @@ local class = require 'middleclass'
 local Interpreter = class 'Interpreter'
 
 -- 初期化
-function Interpreter:initialize()
+function Interpreter:initialize(op)
     self:reset()
+
+    self.operators = op or {
+        increment = '+',
+        decrement = '-',
+        backward = '<',
+        forward = '>',
+        output = '.',
+        input = ',',
+        open = '[',
+        close = ']',
+    }
+    self.functions = {
+        increment = function (word)
+            self:increment(1)
+            self:next(#word)
+        end,
+        decrement = function (word)
+            self:increment(-1)
+            self:next(#word)
+        end,
+        backward = function (word)
+            self:movePointer(-1)
+            self:next(#word)
+        end,
+        forward = function (word)
+            self:movePointer(1)
+            self:next(#word)
+        end,
+        output = function (word)
+            self:print(string.char(self:value()))
+            self:next(#word)
+        end,
+        input = function (word)
+            self:next(#word)
+        end,
+        open = function (word)
+            self:next(#word)
+            if self:value() == 0 then
+                local stack = 1
+                while stack > 0 do
+                    if self.counter > #self.program then
+                        break
+                    elseif self:match(self.operators.open) then
+                        stack = stack + 1
+                        self:next(#self.operators.open)
+                    elseif self:match(self.operators.close) then
+                        stack = stack - 1
+                        self:next(#self.operators.close)
+                    else
+                        self:next()
+                    end
+                end
+            end
+        end,
+        close = function (word)
+            if self:value() ~= 0 then
+                local count = #word
+                local stack = 1
+                while stack > 0 do
+                    self:next(-count)
+                    if self.counter < 1 then
+                        break
+                    elseif self:match(self.operators.open) then
+                        stack = stack - 1
+                        count = #self.operators.open
+                    elseif self:match(self.operators.close) then
+                        stack = stack + 1
+                        count = #self.operators.close
+                    else
+                        count = 1
+                    end
+                end
+            else
+                self:next(#word)
+            end
+        end,
+    }
 end
 
 -- リセット
@@ -75,61 +152,14 @@ end
 
 -- ステップ実行
 function Interpreter:step()
-    if self:match('+') then
-        self:increment(1)
-        self.counter = self.counter + 1
-        print('+')
-    elseif self:match('-') then
-        self:increment(-1)
-        self.counter = self.counter + 1
-        print('-')
-    elseif self:match('<') then
-        self:movePointer(-1)
-        self.counter = self.counter + 1
-        print('<')
-    elseif self:match('>') then
-        self:movePointer(1)
-        self.counter = self.counter + 1
-        print('>')
-    elseif self:match('.') then
-        self:print(string.char(self:value()))
-        self.counter = self.counter + 1
-        print('.')
-    elseif self:match(',') then
-        self.counter = self.counter + 1
-        print(',')
-    elseif self:match('[') then
-        print('[')
-        if self:value() == 0 then
-            local stack = 1
-            while stack > 0 do
-                self.counter = self.counter + 1
-                if match(self.program, self.counter, '[') then
-                    stack = stack + 1
-                elseif match(self.program, self.counter, ']') then
-                    stack = stack - 1
-                end
+    for op, word in pairs(self.operators) do
+        if self:match(word) then
+            print(word)
+            if self.functions[op] then
+                self.functions[op](word)
             end
-        else
-            self.counter = self.counter + 1
+            break
         end
-    elseif self:match(']') then
-        print(']')
-        if self:value() ~= 0 then
-            local stack = 1
-            while stack > 0 do
-                self.counter = self.counter - 1
-                if match(self.program, self.counter, '[') then
-                    stack = stack - 1
-                elseif match(self.program, self.counter, ']') then
-                    stack = stack + 1
-                else
-                end
-            end
-        else
-            self.counter = self.counter + 1
-        end
-    else
     end
 end
 
