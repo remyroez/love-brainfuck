@@ -6,6 +6,7 @@ local Game = require(folderOfThisFile .. 'class')
 
 -- クラス
 local Application = require 'Application'
+local Interpreter = require 'Interpreter'
 
 -- 初期化
 function Game:initialize(...)
@@ -14,19 +15,28 @@ end
 
 -- 読み込み
 function Game:load(...)
+    self.interpreter = Interpreter()
+    self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
 end
 
 -- 更新
 function Game:update(dt, ...)
-    love.graphics.print('Hello, Game!')
 end
 
 -- 描画
 function Game:draw(...)
+    love.graphics.print('counter: ' .. self.interpreter.counter, 0, 0)
+    love.graphics.print('pointer: ' .. self.interpreter.pointer, 0, 20)
+    love.graphics.print(self.interpreter.buffer, 0, 40)
 end
 
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
+    if key == 'space' then
+        self.interpreter:step()
+    elseif key == 'return' then
+        self.interpreter:run()
+    end
 end
 
 -- キー離した
