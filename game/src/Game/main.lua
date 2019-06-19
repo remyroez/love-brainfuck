@@ -7,6 +7,7 @@ local Game = require(folderOfThisFile .. 'class')
 -- クラス
 local Application = require 'Application'
 local Interpreter = require 'Interpreter'
+local Processor = require 'Processor'
 
 -- 初期化
 function Game:initialize(...)
@@ -44,7 +45,14 @@ function Game:load(...)
         close = 'わーい！',
     }
 
+    -- プロセッサ
+    self.processor = Processor()
+
+    -- インタプリタ
     self.interpreter = Interpreter(kemofre)
+    self.interpreter:setProcessor(self.processor)
+
+    -- プログラム
     self.interpreter:load(
         --'+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.'
         'たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！なにこれなにこれ！たーのしー！たーのしー！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たーのしー！たーのしー！たーのしー！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！'
@@ -60,12 +68,15 @@ end
 function Game:draw(...)
     love.graphics.printf(
         'counter: ' .. self.interpreter.counter
-        .. '\npointer: ' .. self.interpreter.pointer
+        .. '\npointer: ' .. self.processor.pointer
         .. '\n\nprogram:'
         ,
         self.font, 16, 16, self.width - 32)
     love.graphics.printf(self.interpreter.program, self.font, 16, self.font:getHeight() * 4 + 16, self.width - 32, 'left')
-    love.graphics.printf('buffer:\n' .. self.interpreter.buffer, self.font, 16, self.height * 0.5, self.width - 32)
+    love.graphics.printf(
+        'buffer:\n' .. self.processor.buffer,
+        self.font, 16, self.height * 0.5, math.min(self.font:getWidth('A') * 40, self.width - 32)
+    )
 end
 
 -- キー入力
@@ -103,4 +114,5 @@ end
 
 -- リサイズ
 function Game:resize(width, height)
+    self.width, self.height = love.graphics.getDimensions()
 end
