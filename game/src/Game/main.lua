@@ -15,8 +15,41 @@ end
 
 -- 読み込み
 function Game:load(...)
-    self.interpreter = Interpreter()
-    self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
+    self.font = love.graphics.newFont('assets/misaki_gothic_2nd.ttf', 12)
+
+    -- スクリーンサイズ
+    self.width, self.height = love.graphics.getDimensions()
+
+    -- Ook! 言語
+    local Ook = {
+        increment = 'Ook. Ook.',
+        decrement = 'Ook! Ook!',
+        backward = 'Ook? Ook.',
+        forward = 'Ook. Ook?',
+        output = 'Ook! Ook.',
+        input = 'Ook. Ook!',
+        open = 'Ook! Ook?',
+        close = 'Ook? Ook!',
+    }
+
+    -- けもフレ言語
+    local kemofre = {
+        increment = 'たーのしー',
+        decrement = 'すっごーい！',
+        backward = 'すごーい！',
+        forward = 'たのしー！',
+        output = 'なにこれなにこれ！',
+        input = 'おもしろーい！',
+        open = 'うわー！',
+        close = 'わーい！',
+    }
+
+    self.interpreter = Interpreter(kemofre)
+    self.interpreter:load(
+        --'+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.'
+        'たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！﻿たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！なにこれなにこれ！たーのしー！たーのしー！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！﻿たーのしー！たーのしー！たーのしー！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！'
+        --'Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.'
+    )
 end
 
 -- 更新
@@ -25,9 +58,14 @@ end
 
 -- 描画
 function Game:draw(...)
-    love.graphics.print('counter: ' .. self.interpreter.counter, 0, 0)
-    love.graphics.print('pointer: ' .. self.interpreter.pointer, 0, 20)
-    love.graphics.print(self.interpreter.buffer, 0, 40)
+    love.graphics.printf(
+        'counter: ' .. self.interpreter.counter
+        .. '\npointer: ' .. self.interpreter.pointer
+        .. '\n\nprogram:'
+        ,
+        self.font, 16, 16, self.width - 32)
+    love.graphics.printf(self.interpreter.program, self.font, 16, self.font:getHeight() * 4 + 16, self.width - 32, 'left')
+    love.graphics.printf('buffer:\n' .. self.interpreter.buffer, self.font, 16, self.height * 0.5, self.width - 32)
 end
 
 -- キー入力
