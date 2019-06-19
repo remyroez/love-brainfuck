@@ -7,16 +7,16 @@ local Interpreter = class 'Interpreter'
 function Interpreter:initialize(op)
     self:reset()
 
-    self.operators = op or {
-        increment = '+',
-        decrement = '-',
-        backward = '<',
-        forward = '>',
-        output = '.',
-        input = ',',
-        open = '[',
-        close = ']',
-    }
+    self.operators = op or {}
+    self.operators.increment = self.operators.increment or '+'
+    self.operators.decrement = self.operators.decrement or '-'
+    self.operators.backward  = self.operators.backward  or '<'
+    self.operators.forward   = self.operators.forward   or '>'
+    self.operators.output    = self.operators.output    or '.'
+    self.operators.input     = self.operators.input     or ','
+    self.operators.open      = self.operators.open      or '['
+    self.operators.close     = self.operators.close     or ']'
+
     self.functions = {
         increment = function (word)
             self:increment(1)
@@ -152,13 +152,20 @@ end
 
 -- ステップ実行
 function Interpreter:step()
-    for op, word in pairs(self.operators) do
-        if self:match(word) then
-            print(word)
-            if self.functions[op] then
-                self.functions[op](word)
+    local stepped = false
+    while not stepped and (self.counter <= #self.program) do
+        for op, word in pairs(self.operators) do
+            if self:match(word) then
+                print(op, word)
+                if self.functions[op] then
+                    self.functions[op](word)
+                end
+                stepped = true
+                break
             end
-            break
+        end
+        if not stepped then
+            self:next()
         end
     end
 end
