@@ -4,6 +4,18 @@ local class = require 'middleclass'
 -- インタプリタ クラス
 local Interpreter = class 'Interpreter'
 
+-- デフォルト命令セット
+Interpreter.static.defaultOperators = {
+    increment = '+',
+    decrement = '-',
+    backward = '<',
+    forward = '>',
+    output = '.',
+    input = ',',
+    open = '[',
+    close = ']',
+}
+
 -- 初期化
 function Interpreter:initialize(op)
     self:reset()

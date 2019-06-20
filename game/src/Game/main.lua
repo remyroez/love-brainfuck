@@ -8,6 +8,7 @@ local Game = require(folderOfThisFile .. 'class')
 local Application = require 'Application'
 local Interpreter = require 'Interpreter'
 local Processor = require 'Processor'
+local Converter = require 'Converter'
 
 -- 初期化
 function Game:initialize(...)
@@ -45,19 +46,41 @@ function Game:load(...)
         close = 'わーい！',
     }
 
+    -- ヘイセイバー言語
+    local heisei = {
+        increment = 'ヘイ！',
+        decrement = 'ディディディディケイド！',
+        backward = '平成ライダーズ！',
+        forward = '仮面ライダーズ！',
+        output = 'セイ！',
+        input = 'ヘヘヘイ！',
+        open = 'フィニッシュタイム！',
+        close = 'アルティメットタイムブレイク！',
+    }
+
+    -- 変換先の言語
+    local lang = heisei
+
+    -- コンバータ
+    self.converter = Converter(lang)
+
     -- プロセッサ
     self.processor = Processor()
 
     -- インタプリタ
-    self.interpreter = Interpreter(kemofre)
+    self.interpreter = Interpreter()
+    self.interpreter:setProcessor(self.converter)
+
+    -- Brainfuck コードを、別言語コードへ変換
+    self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
+    self.interpreter:run()
+
+    -- プロセッサと命令セットを再設定
     self.interpreter:setProcessor(self.processor)
+    self.interpreter.operators = lang
 
     -- プログラム
-    self.interpreter:load(
-        --'+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.'
-        'たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！なにこれなにこれ！たーのしー！たーのしー！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！なにこれなにこれ！たーのしー！たーのしー！たーのしー！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！すっごーい！なにこれなにこれ！うわー！すっごーい！わーい！たのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！うわー！すごーい！たーのしー！たーのしー！たーのしー！たーのしー！たのしー！すっごーい！わーい！すごーい！たーのしー！なにこれなにこれ！うわー！すっごーい！わーい！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！たーのしー！なにこれなにこれ！'
-        --'Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook? Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook?Ook. Ook?Ook. Ook.Ook. Ook.Ook? Ook.Ook! Ook!Ook? Ook!Ook. Ook?Ook. Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook. Ook.Ook. Ook.Ook. Ook.Ook! Ook.Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook!Ook! Ook.'
-    )
+    self.interpreter:load(self.converter.buffer)
 end
 
 -- 更新
