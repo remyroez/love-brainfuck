@@ -37,6 +37,9 @@ function Interpreter:reset()
     self.program = ''
     self.counter = 1
     self:resetProcessor(self.processor)
+    self.running = false
+    self.state = 'stop'
+    self.mode = 'step'
 end
 
 -- プロセッサの設定
@@ -86,7 +89,7 @@ function Interpreter:step()
         for op, word in pairs(self.operators) do
             if self:match(word) then
                 -- ワードが一致したら処理する
-                print(op, word)
+                --print(op, word)
                 self.processor:execute(op, self, word)
                 processed = true
                 break
@@ -101,10 +104,47 @@ function Interpreter:step()
 end
 
 -- 実行
-function Interpreter:run()
-    -- 最後まで処理する
-    while self.counter <= #self.program do
-        self:step()
+function Interpreter:run(mode)
+    self.mode = mode or 'start'
+    self.running = true
+    self.state = 'run'
+end
+
+-- 停止
+function Interpreter:stop()
+    self.running = false
+    self.state = 'stop'
+end
+
+-- トグル
+function Interpreter:toggle()
+    self.running = not self.running
+end
+
+-- バッファ更新
+function Interpreter:flush()
+    self.state = 'flush'
+end
+
+-- 更新
+function Interpreter:update()
+    if not self.running then
+        -- 実行しない
+    elseif self.mode == 'complete' then
+        -- 最後まで実行
+        while self.counter <= #self.program do
+            self:step()
+            if self.state == 'flush' then
+                self.state = 'run'
+                break
+            end
+        end
+    else
+        if self.counter <= #self.program then
+            self:step()
+        else
+            self.running = false
+        end
     end
 end
 

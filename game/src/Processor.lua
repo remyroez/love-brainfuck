@@ -31,27 +31,31 @@ function Processor:initialize(fn)
         output = function (interpreter, word)
             self:print(string.char(self:value()))
             interpreter:next(#word)
+            interpreter:flush()
         end,
         input = function (interpreter, word)
             interpreter:next(#word)
         end,
         open = function (interpreter, word)
-            interpreter:next(#word)
             if self:value() == 0 then
+                local count = #word
                 local stack = 1
                 while stack > 0 do
+                    interpreter:next(count)
                     if interpreter.counter > #interpreter.program then
                         break
                     elseif interpreter:match(interpreter.operators.open) then
                         stack = stack + 1
-                        interpreter:next(#interpreter.operators.open)
+                        count = #interpreter.operators.open
                     elseif interpreter:match(interpreter.operators.close) then
                         stack = stack - 1
-                        interpreter:next(#interpreter.operators.close)
+                        count = #interpreter.operators.close
                     else
-                        interpreter:next()
+                        count = 1
                     end
                 end
+            else
+                interpreter:next(#word)
             end
         end,
         close = function (interpreter, word)

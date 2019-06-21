@@ -60,32 +60,37 @@ function Game:load(...)
     }
 
     -- 変換先の言語
-    local lang = heisei
-
-    -- コンバータ
-    self.converter = Converter(lang)
+    local lang = Interpreter.defaultOperators
 
     -- プロセッサ
     self.processor = Processor()
 
     -- インタプリタ
     self.interpreter = Interpreter()
-    self.interpreter:resetProcessor(self.converter)
 
     -- Brainfuck コードを、別言語コードへ変換
-    self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
-    self.interpreter:run()
+    local code = '+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.'
+    if false then
+        lang = heisei
+        self.converter = Converter(lang)
+        self.interpreter:resetProcessor(self.converter)
+        self.interpreter:load(code)
+        self.interpreter:run()
+        code = self.converter.buffer
+    end
 
     -- プロセッサと命令セットを再設定
     self.interpreter:resetProcessor(self.processor)
     self.interpreter.operators = lang
 
     -- プログラム
-    self.interpreter:load(self.converter.buffer)
+    self.interpreter:load(code)
 end
 
 -- 更新
 function Game:update(dt, ...)
+    self.interpreter:update()
+
     if self.debugMode then
         self:debugUpdate(dt)
     end
@@ -93,16 +98,10 @@ end
 
 -- 描画
 function Game:draw(...)
+    -- プロセッサのバッファ
     love.graphics.printf(
-        'counter: ' .. self.interpreter.counter
-        .. '\npointer: ' .. self.processor.pointer
-        .. '\n\nprogram:'
-        ,
-        self.font, 16, 16, self.width - 32)
-    love.graphics.printf(self.interpreter.program, self.font, 16, self.font:getHeight() * 4 + 16, self.width - 32, 'left')
-    love.graphics.printf(
-        'buffer:\n' .. self.processor.buffer,
-        self.font, 16, self.height * 0.5, math.min(self.font:getWidth('A') * 40, self.width - 32)
+        self.processor.buffer,
+        self.font, 0, 0, self.width
     )
 
     if self.debugMode then
@@ -111,14 +110,18 @@ function Game:draw(...)
 end
 
 -- プログラム実行
-function Game:runProgram()
-    self.interpreter:resetProcessor()
-    self.interpreter:resetCounter()
-    self.interpreter:run()
+function Game:toggleProgram()
+    self.interpreter:toggle()
+end
+
+-- プログラム実行
+function Game:completeRunProgram()
+    self.interpreter:run('complete')
 end
 
 -- プログラムステップ実行
 function Game:stepProgram()
+    self.interpreter:stop()
     self.interpreter:step()
 end
 

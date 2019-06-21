@@ -45,8 +45,12 @@ function Game:editorWindow()
             self:resetEnvironment()
         end
         Slab.SameLine()
-        if Slab.Button('Run', { AlignRight = true }) then
-            self:runProgram()
+        if Slab.Button(self.interpreter.running and 'Stop' or 'Run', { AlignRight = true }) then
+            if not self.interpreter.running and (Slab.IsKeyDown('rshift') or Slab.IsKeyDown('lshift')) then
+                self:completeRunProgram()
+            else
+                self:toggleProgram()
+            end
         end
         Slab.SameLine()
         if Slab.Button('Step', { AlignRight = true }) then
