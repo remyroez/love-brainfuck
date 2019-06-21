@@ -17,4 +17,7 @@ end
 function love.conf(t)
 	t.identity = 'love-brainfuck'
 	t.version = '11.2'
+
+	t.window.title = 'BRAINFUCK'
+	t.window.resizable = true
 end
