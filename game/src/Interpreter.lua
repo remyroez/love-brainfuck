@@ -36,12 +36,12 @@ end
 function Interpreter:reset()
     self.program = ''
     self.counter = 1
-    self:setProcessor(self.processor)
+    self:resetProcessor(self.processor)
 end
 
 -- プロセッサの設定
-function Interpreter:setProcessor(processor)
-    self.processor = processor
+function Interpreter:resetProcessor(processor)
+    self.processor = processor or self.processor
     if self.processor then
         self.processor:reset()
     end
@@ -53,14 +53,19 @@ function Interpreter:load(program)
     self.program = program or ''
 end
 
--- プログラムカウンタを進める
-function Interpreter:next(n)
-    self.counter = self.counter + (n or 1)
+-- カウンターのリセット
+function Interpreter:resetCounter(counter)
+    self.counter = counter or 1
     if self.counter < 1 then
         self.counter = 1
     elseif self.counter > #self.program then
         self.counter = #self.program + 1
     end
+end
+
+-- プログラムカウンタを進める
+function Interpreter:next(n)
+    self:resetCounter(self.counter + (n or 1))
 end
 
 -- マッチ

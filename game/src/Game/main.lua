@@ -13,6 +13,7 @@ local Converter = require 'Converter'
 -- 初期化
 function Game:initialize(...)
     Application.initialize(self, ...)
+    self:debugInitialize()
 end
 
 -- 読み込み
@@ -69,14 +70,14 @@ function Game:load(...)
 
     -- インタプリタ
     self.interpreter = Interpreter()
-    self.interpreter:setProcessor(self.converter)
+    self.interpreter:resetProcessor(self.converter)
 
     -- Brainfuck コードを、別言語コードへ変換
     self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
     self.interpreter:run()
 
     -- プロセッサと命令セットを再設定
-    self.interpreter:setProcessor(self.processor)
+    self.interpreter:resetProcessor(self.processor)
     self.interpreter.operators = lang
 
     -- プログラム
@@ -85,6 +86,9 @@ end
 
 -- 更新
 function Game:update(dt, ...)
+    if self.debugMode then
+        self:debugUpdate(dt)
+    end
 end
 
 -- 描画
@@ -100,15 +104,32 @@ function Game:draw(...)
         'buffer:\n' .. self.processor.buffer,
         self.font, 16, self.height * 0.5, math.min(self.font:getWidth('A') * 40, self.width - 32)
     )
+
+    if self.debugMode then
+        self:debugDraw()
+    end
+end
+
+-- プログラム実行
+function Game:runProgram()
+    self.interpreter:resetProcessor()
+    self.interpreter:resetCounter()
+    self.interpreter:run()
+end
+
+-- プログラムステップ実行
+function Game:stepProgram()
+    self.interpreter:step()
+end
+
+-- 環境のリセット
+function Game:resetEnvironment()
+    self.interpreter:resetProcessor()
+    self.interpreter:resetCounter()
 end
 
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
-    if key == 'space' then
-        self.interpreter:step()
-    elseif key == 'return' then
-        self.interpreter:run()
-    end
 end
 
 -- キー離した
