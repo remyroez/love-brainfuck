@@ -3,7 +3,7 @@
 local debugMode = true
 
 -- フォーカス
-local pauseOnUnfocus = true
+local pauseOnUnfocus = false
 local focused = true
 local screenshot
 
@@ -18,14 +18,14 @@ end
 
 -- 更新
 function love.update(dt)
-    if focused then
+    if focused or not pauseOnUnfocus then
         application:update(dt)
     end
 end
 
 -- 描画
 function love.draw()
-    if focused or screenshot == nil then
+    if (focused or screenshot == nil) or not pauseOnUnfocus then
         -- 画面のリセット
         love.graphics.reset()
 
