@@ -12,18 +12,83 @@ function Game:debugInitialize()
     love.keyboard.setKeyRepeat(true)
     Slab.Initialize()
     Slab.GetStyle().Font = self.font
+
+    self.filename = ''
+
+    self.visible = {
+        'Editor',
+        Editor = true,
+    }
 end
 
 -- デバッグ更新
 function Game:debugUpdate(dt, ...)
     Slab.Update(dt)
 
-    self:editorWindow()
+    self:mainMenuBar()
+
+    if self.visible.Editor then self:editorWindow() end
 end
 
 -- デバッグ描画
 function Game:debugDraw(...)
     Slab.Draw()
+end
+
+-- メインメニューバー
+function Game:mainMenuBar()
+    if Slab.BeginMainMenuBar() then
+        -- ファイルメニュー
+        if Slab.BeginMenu("File") then
+            -- 新規作成
+            if Slab.MenuItem("New...") then
+                Slab.OpenDialog('New')
+            end
+
+            -- 開く
+            if Slab.MenuItem("Open...") then
+                Slab.OpenDialog('Open')
+            end
+
+            -- 上書き保存
+            if Slab.MenuItem("Save") then
+                Slab.OpenDialog('Save')
+            end
+
+            -- 名前をつけて保存
+            if Slab.MenuItem("Save As...") then
+                Slab.OpenDialog('Save')
+            end
+
+            Slab.Separator()
+
+            -- セーブフォルダを開く
+            if Slab.MenuItem("Open save directory") then
+                love.system.openURL('file://' .. love.filesystem.getSaveDirectory())
+            end
+
+            Slab.Separator()
+
+            -- 終了
+            if Slab.MenuItem("Quit") then
+                love.event.quit()
+            end
+
+            Slab.EndMenu()
+        end
+
+        -- 表示メニュー
+        if Slab.BeginMenu("View") then
+            for _, name in ipairs(self.visible) do
+                if Slab.MenuItemChecked(name, self.visible[name]) then
+                    self.visible[name] = not self.visible[name]
+                end
+            end
+            Slab.EndMenu()
+        end
+
+        Slab.EndMainMenuBar()
+    end
 end
 
 -- エディタウィンドウ

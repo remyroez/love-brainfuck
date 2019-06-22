@@ -139,6 +139,11 @@ function Interpreter:update()
                 break
             end
         end
+        if self.counter <= #self.program then
+            -- 一時中止
+        else
+            self.running = false
+        end
     else
         if self.counter <= #self.program then
             self:step()
