@@ -35,8 +35,8 @@ end
 -- リセット
 function Interpreter:reset()
     self.program = ''
-    self.counter = 1
-    self:resetProcessor(self.processor)
+    self:resetCounter()
+    self:resetProcessor()
     self.running = false
     self.state = 'stop'
     self.mode = 'step'
@@ -114,6 +114,7 @@ end
 function Interpreter:stop()
     self.running = false
     self.state = 'stop'
+    self.mode = 'start'
 end
 
 -- トグル
@@ -142,13 +143,13 @@ function Interpreter:update()
         if self.counter <= #self.program then
             -- 一時中止
         else
-            self.running = false
+            self:stop()
         end
     else
         if self.counter <= #self.program then
             self:step()
         else
-            self.running = false
+            self:stop()
         end
     end
 end

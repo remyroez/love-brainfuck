@@ -7,26 +7,62 @@ local Game = require(folderOfThisFile .. 'class')
 -- ライブラリ
 local Slab = require 'Slab'
 
+-- スペーサー
+local function spacer(w, h)
+    local x, y = Slab.GetCursorPos()
+    Slab.Button('', { Invisible = true, W = w, H = h })
+    Slab.SetCursorPos(x, y)
+end
+
+-- ディレクトリの準備
+local function requireDirectory(name)
+    local dir = love.filesystem.getInfo(name, 'directory')
+    if dir == nil then
+        love.filesystem.createDirectory(name)
+    end
+end
+
 -- デバッグ初期化
 function Game:debugInitialize()
     love.keyboard.setKeyRepeat(true)
     Slab.Initialize()
     Slab.GetStyle().Font = self.font
 
-    self.filename = ''
-
     self.visible = {
         'Editor',
         Editor = true,
     }
+
+    self.currentFilename = ''
+    self.filename = ''
+    self.fileList = nil
+
+    requireDirectory('program')
+end
+
+-- ファイルリストの更新
+function Game:refreshFileList()
+    self.fileList = {}
+    local items = love.filesystem.getDirectoryItems('program')
+    for i, filename in ipairs(items) do
+        if love.filesystem.getInfo('program/' .. filename, 'file') then
+            table.insert(self.fileList, filename)
+        end
+    end
 end
 
 -- デバッグ更新
 function Game:debugUpdate(dt, ...)
     Slab.Update(dt)
 
+    -- メインメニューバー
     self:mainMenuBar()
 
+    -- ダイアログ
+    self:openDialog()
+    self:saveDialog()
+
+    -- ウィンドウ
     if self.visible.Editor then self:editorWindow() end
 end
 
@@ -41,8 +77,9 @@ function Game:mainMenuBar()
         -- ファイルメニュー
         if Slab.BeginMenu("File") then
             -- 新規作成
-            if Slab.MenuItem("New...") then
-                Slab.OpenDialog('New')
+            if Slab.MenuItem("New") then
+                self.currentFilename = ''
+                self:newEnvironment()
             end
 
             -- 開く
@@ -52,11 +89,13 @@ function Game:mainMenuBar()
 
             -- 上書き保存
             if Slab.MenuItem("Save") then
+                self.filename = self.currentFilename
                 Slab.OpenDialog('Save')
             end
 
             -- 名前をつけて保存
             if Slab.MenuItem("Save As...") then
+                self.filename = ''
                 Slab.OpenDialog('Save')
             end
 
@@ -88,6 +127,103 @@ function Game:mainMenuBar()
         end
 
         Slab.EndMainMenuBar()
+    end
+end
+
+-- 開くダイアログ
+function Game:openDialog()
+    if Slab.BeginDialog('Open', { Title = 'Open' }) then
+        spacer(300)
+
+        -- ファイル一覧リストボックス
+        Slab.BeginListBox('OpenList')
+        do
+            -- ファイル一覧の更新
+            if self.fileList == nil then
+                self:refreshFileList()
+            end
+
+            -- ファイル一覧リストボックスアイテム
+            for i, file in ipairs(self.fileList) do
+                Slab.BeginListBoxItem('OpenItem_' .. i, { Selected = self.filename == file })
+                Slab.Text(file)
+                if Slab.IsListBoxItemClicked() then
+                    self.filename = file
+                end
+                Slab.EndListBoxItem()
+            end
+        end
+        Slab.EndListBox()
+
+        --Slab.Separator()
+
+        -- 開くボタン
+        if Slab.Button('Open', { AlignRight = true, Disabled = #self.filename == 0 }) then
+
+            Slab.CloseDialog()
+        end
+
+        -- キャンセルボタン
+        Slab.SameLine()
+        if Slab.Button('Cancel', { AlignRight = true }) then
+            self.filename = ''
+            Slab.CloseDialog()
+        end
+
+        Slab.EndDialog()
+    end
+end
+
+-- 保存ダイアログ
+function Game:saveDialog()
+    if Slab.BeginDialog('Save', { Title = 'Save' }) then
+        spacer(300)
+
+        -- ファイル一覧リストボックス
+        Slab.BeginListBox('SaveList')
+        do
+            -- ファイル一覧の更新
+            if self.fileList == nil then
+                self:refreshFileList()
+            end
+
+            -- ファイル一覧リストボックスアイテム
+            for i, file in ipairs(self.fileList) do
+                Slab.BeginListBoxItem('SaveItem_' .. i, { Selected = self.filename == file })
+                Slab.Text(file)
+                if Slab.IsListBoxItemClicked() then
+                    self.filename = file
+                end
+                Slab.EndListBoxItem()
+            end
+        end
+        Slab.EndListBox()
+
+        Slab.Separator()
+
+        -- ファイル名
+        Slab.Text('File name: ')
+        Slab.SameLine()
+        if Slab.Input('filename', { Text = self.filename, ReturnOnText = false }) then
+            self.filename = Slab.GetInputText()
+        end
+
+        Slab.Separator()
+
+        -- 保存ボタン
+        if Slab.Button('Save', { AlignRight = true, Disabled = #self.filename == 0 }) then
+
+            Slab.CloseDialog()
+        end
+
+        -- キャンセルボタン
+        Slab.SameLine()
+        if Slab.Button('Cancel', { AlignRight = true }) then
+            self.filename = ''
+            Slab.CloseDialog()
+        end
+
+        Slab.EndDialog()
     end
 end
 

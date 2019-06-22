@@ -131,6 +131,12 @@ function Game:resetEnvironment()
     self.interpreter:resetCounter()
 end
 
+-- 環境のリセット
+function Game:newEnvironment()
+    self:resetEnvironment()
+    self.interpreter:load()
+end
+
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
 end
