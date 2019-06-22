@@ -36,6 +36,7 @@ function Game:debugInitialize()
     self.currentFilename = ''
     self.filename = ''
     self.fileList = nil
+    self.errorMessage = nil
 
     requireDirectory('program')
 end
@@ -64,6 +65,13 @@ function Game:debugUpdate(dt, ...)
 
     -- ウィンドウ
     if self.visible.Editor then self:editorWindow() end
+
+    -- エラーメッセージボックス
+    if self.errorMessage then
+        if Slab.MessageBox('Error', self.errorMessage) ~= '' then
+            self.errorMessage = nil
+        end
+    end
 end
 
 -- デバッグ描画
@@ -89,13 +97,22 @@ function Game:mainMenuBar()
 
             -- 上書き保存
             if Slab.MenuItem("Save") then
-                self.filename = self.currentFilename
-                Slab.OpenDialog('Save')
+                if #self.currentFilename > 0 then
+                    -- 既にファイル名が指定されている
+                    local success, message = self:saveFile(self.currentFilename, self.interpreter.program)
+                    if success then
+                    else
+                        self.errorMessage = message
+                    end
+                else
+                    -- まだ保存されていない
+                    self.filename = self.currentFilename
+                    Slab.OpenDialog('Save')
+                end
             end
 
             -- 名前をつけて保存
             if Slab.MenuItem("Save As...") then
-                self.filename = ''
                 Slab.OpenDialog('Save')
             end
 
@@ -155,23 +172,40 @@ function Game:openDialog()
         end
         Slab.EndListBox()
 
-        --Slab.Separator()
+        Slab.Separator()
 
         -- 開くボタン
         if Slab.Button('Open', { AlignRight = true, Disabled = #self.filename == 0 }) then
-
-            Slab.CloseDialog()
+            local data, message = self:openFile(self.filename)
+            if message then
+                self.errorMessage = message
+            else
+                self.interpreter.program = data
+                self.filename = ''
+                self.fileList = nil
+                Slab.CloseDialog()
+            end
         end
 
         -- キャンセルボタン
         Slab.SameLine()
         if Slab.Button('Cancel', { AlignRight = true }) then
             self.filename = ''
+            self.fileList = nil
             Slab.CloseDialog()
         end
 
         Slab.EndDialog()
     end
+end
+
+-- ファイルを開く
+function Game:openFile(name, data)
+    local data, sizeOrMessage = love.filesystem.read('program/' .. name)
+    if data and type(sizeOrMessage) == 'number' then
+        self.currentFilename = name
+    end
+    return data, type(sizeOrMessage) == 'string' and sizeOrMessage or nil
 end
 
 -- 保存ダイアログ
@@ -212,14 +246,22 @@ function Game:saveDialog()
 
         -- 保存ボタン
         if Slab.Button('Save', { AlignRight = true, Disabled = #self.filename == 0 }) then
-
-            Slab.CloseDialog()
+            local success, message = self:saveFile(self.filename, self.interpreter.program)
+            if success then
+                self.currentFilename = self.filename
+                self.filename = ''
+                self.fileList = nil
+                Slab.CloseDialog()
+            else
+                self.errorMessage = message
+            end
         end
 
         -- キャンセルボタン
         Slab.SameLine()
         if Slab.Button('Cancel', { AlignRight = true }) then
             self.filename = ''
+            self.fileList = nil
             Slab.CloseDialog()
         end
 
@@ -227,12 +269,21 @@ function Game:saveDialog()
     end
 end
 
+-- ファイルを保存
+function Game:saveFile(name, data)
+    local success, message = love.filesystem.write('program/' .. name, data)
+    if success then
+        self.currentFilename = name
+    end
+    return success, message
+end
+
 -- エディタウィンドウ
 function Game:editorWindow()
     Slab.BeginWindow(
         'Editor',
         {
-            Title = 'Editor',
+            Title = 'Editor' .. ((#self.currentFilename > 0) and (' - ' .. self.currentFilename) or ''),
             AutoSizeWindow = false,
             X = 50, Y = 50,
             W = self.width - 50 * 2,
