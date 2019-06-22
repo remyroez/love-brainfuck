@@ -127,16 +127,36 @@ function Interpreter:flush()
     self.state = 'flush'
 end
 
+-- 入力待ち
+function Interpreter:waitToInput()
+    self.state = 'input'
+end
+
+-- データ入力
+function Interpreter:input(data, run)
+    self.processor:value(data)
+    if run then
+        self.state = 'run'
+    end
+end
+
 -- 更新
 function Interpreter:update()
     if not self.running then
         -- 実行しない
+    elseif self.state == 'input' then
+        -- 入力待ち
     elseif self.mode == 'complete' then
         -- 最後まで実行
         while self.counter <= #self.program do
             self:step()
+
             if self.state == 'flush' then
+                -- バッファ更新のため一旦抜ける
                 self.state = 'run'
+                break
+            elseif self.state == 'input' then
+                -- 入力ため抜ける
                 break
             end
         end

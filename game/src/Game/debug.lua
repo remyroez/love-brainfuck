@@ -316,7 +316,15 @@ function Game:editorWindow()
 
     local x, y = Slab.GetCursorPos()
 	local ww, wh = Slab.GetWindowActiveSize()
-    if Slab.Input('EditorInput', { MultiLine = true, Text = self.interpreter.program, W = ww, H = wh - y }) then
+    if Slab.Input(
+        'EditorInput',
+        {
+            MultiLine = true,
+            Text = self.interpreter.program,
+            W = ww, H = wh - y,
+            ReadOnly = self:isWaitForInput(),
+         }
+    ) then
         self.interpreter.program = Slab.GetInputText()
     end
 

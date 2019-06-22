@@ -34,6 +34,7 @@ function Processor:initialize(fn)
             interpreter:flush()
         end,
         input = function (interpreter, word)
+            interpreter:waitToInput()
             interpreter:next(#word)
         end,
         open = function (interpreter, word)

@@ -137,6 +137,11 @@ function Game:newEnvironment()
     self.interpreter:load()
 end
 
+-- 入力待ちかどうか
+function Game:isWaitForInput()
+    return self.interpreter.state == 'input'
+end
+
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
 end
@@ -147,6 +152,14 @@ end
 
 -- テキスト入力
 function Game:textinput(text)
+    if not self:isWaitForInput() then
+        -- 入力待ちではない
+    elseif text:match("%w") or text:match("%W") then
+        -- 入力可能な文字だったので入力
+        self.interpreter:input(text:byte(), true)
+    else
+        -- それ以外の文字
+    end
 end
 
 -- マウス入力
