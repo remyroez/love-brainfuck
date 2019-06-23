@@ -73,7 +73,7 @@ function Game:debugInitialize()
         'Statements',
         Editor = true,
         Memory = true,
-        Statements = true,
+        Statements = false,
     }
 
     self.currentFilename = ''

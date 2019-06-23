@@ -23,68 +23,20 @@ function Game:load(...)
     -- スクリーンサイズ
     self.width, self.height = love.graphics.getDimensions()
 
-    -- Ook! 言語
-    local Ook = {
-        increment = 'Ook. Ook.',
-        decrement = 'Ook! Ook!',
-        backward = 'Ook? Ook.',
-        forward = 'Ook. Ook?',
-        output = 'Ook! Ook.',
-        input = 'Ook. Ook!',
-        open = 'Ook! Ook?',
-        close = 'Ook? Ook!',
-    }
-
-    -- けもフレ言語
-    local kemofre = {
-        increment = 'たーのしー',
-        decrement = 'すっごーい！',
-        backward = 'すごーい！',
-        forward = 'たのしー！',
-        output = 'なにこれなにこれ！',
-        input = 'おもしろーい！',
-        open = 'うわー！',
-        close = 'わーい！',
-    }
-
-    -- ヘイセイバー言語
-    local heisei = {
-        increment = 'ヘイ！',
-        decrement = 'ディディディディケイド！',
-        backward = '平成ライダーズ！',
-        forward = '仮面ライダーズ！',
-        output = 'セイ！',
-        input = 'ヘヘヘイ！',
-        open = 'フィニッシュタイム！',
-        close = 'アルティメットタイムブレイク！',
-    }
-
-    -- 変換先の言語
-    local lang = Interpreter.defaultOperators
-
     -- プロセッサ
     self.processor = Processor()
+
+    -- コンバーター
+    self.converter = Converter()
 
     -- インタプリタ
     self.interpreter = Interpreter()
 
-    -- Brainfuck コードを、別言語コードへ変換
-    local code = '+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.'
-    if false then
-        lang = heisei
-        self.converter = Converter(lang)
-        self.interpreter:resetProcessor(self.converter)
-        self.interpreter:load(code)
-        self.interpreter:run()
-        code = self.converter.buffer
-    end
-
-    -- プロセッサと命令セットを再設定
+    -- プロセッサと命令セットを設定
     self.interpreter:resetProcessor(self.processor)
-    self.interpreter.operators = lang
 
     -- プログラム
-    self.interpreter:load(code)
+    self.interpreter:load()
 end
 
 -- 更新
@@ -140,6 +92,18 @@ end
 -- 入力待ちかどうか
 function Game:isWaitForInput()
     return self.interpreter.state == 'input'
+end
+
+-- コンバート
+function Game:convert(op)
+    self:resetEnvironment()
+
+    self.converter.operators = op
+    self.interpreter:resetProcessor(self.converter)
+    self.interpreter:run()
+    self.interpreter:load(self.converter.buffer)
+    self.interpreter:resetProcessor(self.processor)
+    self.interpreter.operators = op
 end
 
 -- キー入力
