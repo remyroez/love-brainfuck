@@ -70,9 +70,11 @@ function Game:debugInitialize()
     self.visible = {
         'Editor',
         'Memory',
+        'Buffer',
         'Statements',
         Editor = true,
         Memory = true,
+        Buffer = true,
         Statements = false,
     }
 
@@ -157,6 +159,7 @@ function Game:debugUpdate(dt, ...)
     if self.visible.Editor then self:editorWindow() end
     if self.visible.Statements then self:statementsWindow() end
     if self.visible.Memory then self:memoryWindow() end
+    if self.visible.Buffer then self:bufferWindow() end
 
     -- エラーメッセージボックス
     if self.errorMessage then
@@ -379,7 +382,7 @@ function Game:editorWindow()
             AutoSizeWindow = false,
             X = 50, Y = 50,
             W = self.width - 50 * 2,
-            H = self.height / 2 - 50 - 50 /2
+            H = self.height / 2 - 50 - 16
         }
     )
 
@@ -430,16 +433,36 @@ function Game:memoryWindow()
         {
             Title = 'Memory',
             AutoSizeWindow = false,
-            X = 50, Y = self.height / 2 + 25,
-            W = self.width - 50 * 2,
-            H = self.height / 2 - 50 - 50 / 2
+            X = 50, Y = self.height / 2 + 8,
+            W = 280,
+            H = self.height / 2 - 50 - 16
         }
     )
 
     for i, value in ipairs(self.processor.memory) do
         Slab.Text(string.format('%02x', value), { Color = i == self.processor.pointer and { 1, 0, 0 } or nil })
-        Slab.SameLine()
+        if i % 16 ~= 0 then
+            Slab.SameLine()
+        end
     end
+
+    Slab.EndWindow()
+end
+
+-- バッファウィンドウ
+function Game:bufferWindow()
+    Slab.BeginWindow(
+        'Buffer',
+        {
+            Title = 'Buffer',
+            AutoSizeWindow = false,
+            X = 50 + 280 + 16, Y = self.height / 2 + 8,
+            W = self.width - 50 * 2 - (280 + 16),
+            H = self.height / 2 - 50 - 16
+        }
+    )
+
+    Slab.Text(self.processor.buffer)
 
     Slab.EndWindow()
 end

@@ -50,12 +50,6 @@ end
 
 -- 描画
 function Game:draw(...)
-    -- プロセッサのバッファ
-    love.graphics.printf(
-        self.processor.buffer,
-        self.font, 0, self.debugMode and self.font:getHeight() or 0, self.width
-    )
-
     if self.debugMode then
         self:debugDraw()
     end
