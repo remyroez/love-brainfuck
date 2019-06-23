@@ -14,6 +14,26 @@ local function spacer(w, h)
     Slab.SetCursorPos(x, y)
 end
 
+-- 入力欄
+local function input(t, name, label)
+    local changed = false
+
+    Slab.BeginColumn(1)
+    Slab.Text(label or name or '')
+    Slab.EndColumn()
+
+    Slab.BeginColumn(2)
+	local ww, wh = Slab.GetWindowActiveSize()
+    local h = Slab.GetStyle().Font:getHeight()
+    if Slab.Input(name, { Text = tostring(t[name]), ReturnOnText = false, W = ww, H = h }) then
+        t[name] = Slab.GetInputText()
+        changed = true
+    end
+    Slab.EndColumn()
+
+    return changed
+end
+
 -- ディレクトリの準備
 local function requireDirectory(name)
     local dir = love.filesystem.getInfo(name, 'directory')
@@ -30,7 +50,9 @@ function Game:debugInitialize()
 
     self.visible = {
         'Editor',
+        'Statements',
         Editor = true,
+        Statements = true,
     }
 
     self.currentFilename = ''
@@ -65,6 +87,7 @@ function Game:debugUpdate(dt, ...)
 
     -- ウィンドウ
     if self.visible.Editor then self:editorWindow() end
+    if self.visible.Statements then self:statementsWindow() end
 
     -- エラーメッセージボックス
     if self.errorMessage then
@@ -327,6 +350,28 @@ function Game:editorWindow()
     ) then
         self.interpreter.program = Slab.GetInputText()
     end
+
+    Slab.EndWindow()
+end
+
+-- 命令ウィンドウ
+function Game:statementsWindow()
+    Slab.BeginWindow(
+        'Statements',
+        {
+            Title = 'Statements', Columns = 2
+        }
+    )
+    spacer(300)
+
+    input(self.interpreter.operators, 'increment', 'Increment Byte')
+    input(self.interpreter.operators, 'decrement', 'Decrement Byte')
+    input(self.interpreter.operators, 'forward', 'Increment Pointer')
+    input(self.interpreter.operators, 'backward', 'Decrement Pointer')
+    input(self.interpreter.operators, 'output', 'Output Byte')
+    input(self.interpreter.operators, 'input', 'Input Byte')
+    input(self.interpreter.operators, 'open', 'Begin Loop')
+    input(self.interpreter.operators, 'close', 'End Loop')
 
     Slab.EndWindow()
 end
