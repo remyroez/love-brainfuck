@@ -14,6 +14,11 @@ application:setDebugMode(debugMode)
 -- 読み込み
 function love.load()
     love.math.setRandomSeed(love.timer.getTime())
+
+    local dir = love.filesystem.getInfo('screenshot', 'directory')
+    if dir == nil then
+        love.filesystem.createDirectory('screenshot')
+    end
 end
 
 -- 更新
@@ -45,7 +50,7 @@ function love.keypressed(key, scancode, isrepeat)
         love.event.quit()
     elseif key == 'printscreen' then
         -- スクリーンショット
-        love.graphics.captureScreenshot('' .. os.time() .. '.png')
+        love.graphics.captureScreenshot('screenshot/' .. os.time() .. '.png')
     elseif key == 'f5' then
         -- リスタート
         love.event.quit('restart')
