@@ -6,6 +6,25 @@ local Game = require(folderOfThisFile .. 'class')
 
 -- ライブラリ
 local Slab = require 'Slab'
+local Interpreter = require 'Interpreter'
+
+-- ディープコピー
+local function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        -- tableなら再帰でコピー
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else
+        -- number, string, booleanなどはそのままコピー
+        copy = orig
+    end
+    return copy
+end
 
 -- スペーサー
 local function spacer(w, h)
@@ -59,6 +78,53 @@ function Game:debugInitialize()
     self.filename = ''
     self.fileList = nil
     self.errorMessage = nil
+
+    self.statements = {
+        {
+            name = 'Brainfuck',
+            operators = Interpreter.defaultOperators,
+        },
+        {
+            name = 'Ook!',
+            operators = {
+                increment = 'Ook. Ook.',
+                decrement = 'Ook! Ook!',
+                backward = 'Ook? Ook.',
+                forward = 'Ook. Ook?',
+                output = 'Ook! Ook.',
+                input = 'Ook. Ook!',
+                open = 'Ook! Ook?',
+                close = 'Ook? Ook!',
+            }
+        },
+        {
+            name = 'けもフレ言語',
+            operators = {
+                increment = 'たーのしー',
+                decrement = 'すっごーい！',
+                backward = 'すごーい！',
+                forward = 'たのしー！',
+                output = 'なにこれなにこれ！',
+                input = 'おもしろーい！',
+                open = 'うわー！',
+                close = 'わーい！',
+            }
+        },
+        {
+            name = 'ライドヘイセイバー',
+            operators = {
+                increment = 'ヘイ！',
+                decrement = 'ディディディディケイド！',
+                backward = '平成ライダーズ！',
+                forward = '仮面ライダーズ！',
+                output = 'セイ！',
+                input = 'ヘヘヘイ！',
+                open = 'フィニッシュタイム！',
+                close = 'アルティメットタイムブレイク！',
+            }
+        },
+    }
+    self.selectedStatements = 'Brainfuck'
 
     requireDirectory('program')
 end
@@ -364,14 +430,34 @@ function Game:statementsWindow()
     )
     spacer(300)
 
-    input(self.interpreter.operators, 'increment', 'Increment Byte')
-    input(self.interpreter.operators, 'decrement', 'Decrement Byte')
-    input(self.interpreter.operators, 'forward', 'Increment Pointer')
-    input(self.interpreter.operators, 'backward', 'Decrement Pointer')
-    input(self.interpreter.operators, 'output', 'Output Byte')
-    input(self.interpreter.operators, 'input', 'Input Byte')
-    input(self.interpreter.operators, 'open', 'Begin Loop')
-    input(self.interpreter.operators, 'close', 'End Loop')
+    -- プリセット
+    local w, h = Slab.GetWindowActiveSize()
+    if Slab.BeginComboBox(
+        'StatementSet',
+        { Selected = self.selectedStatements or 'Presets', W = w }) then
+        for i, t in ipairs(self.statements) do
+            if Slab.TextSelectable(t.name) then
+                self.selectedStatements = t.name
+                self.interpreter.operators = deepcopy(t.operators)
+            end
+        end
+        Slab.EndComboBox()
+    end
+
+    -- 命令セット
+    local changed = false
+    changed = input(self.interpreter.operators, 'forward', 'Increment Pointer') or changed
+    changed = input(self.interpreter.operators, 'backward', 'Decrement Pointer') or changed
+    changed = input(self.interpreter.operators, 'increment', 'Increment Byte') or changed
+    changed = input(self.interpreter.operators, 'decrement', 'Decrement Byte') or changed
+    changed = input(self.interpreter.operators, 'output', 'Output Byte') or changed
+    changed = input(self.interpreter.operators, 'input', 'Input Byte') or changed
+    changed = input(self.interpreter.operators, 'open', 'Begin Loop') or changed
+    changed = input(self.interpreter.operators, 'close', 'End Loop') or changed
+
+    if changed then
+        self.selectedStatements = nil
+    end
 
     Slab.EndWindow()
 end
