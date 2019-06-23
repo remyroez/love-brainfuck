@@ -69,8 +69,10 @@ function Game:debugInitialize()
 
     self.visible = {
         'Editor',
+        'Memory',
         'Statements',
         Editor = true,
+        Memory = true,
         Statements = true,
     }
 
@@ -154,6 +156,7 @@ function Game:debugUpdate(dt, ...)
     -- ウィンドウ
     if self.visible.Editor then self:editorWindow() end
     if self.visible.Statements then self:statementsWindow() end
+    if self.visible.Memory then self:memoryWindow() end
 
     -- エラーメッセージボックス
     if self.errorMessage then
@@ -376,7 +379,7 @@ function Game:editorWindow()
             AutoSizeWindow = false,
             X = 50, Y = 50,
             W = self.width - 50 * 2,
-            H = self.height - 50 * 2
+            H = self.height / 2 - 50 - 50 /2
         }
     )
 
@@ -415,6 +418,27 @@ function Game:editorWindow()
          }
     ) then
         self.interpreter.program = Slab.GetInputText()
+    end
+
+    Slab.EndWindow()
+end
+
+-- メモリウィンドウ
+function Game:memoryWindow()
+    Slab.BeginWindow(
+        'Memory',
+        {
+            Title = 'Memory',
+            AutoSizeWindow = false,
+            X = 50, Y = self.height / 2 + 25,
+            W = self.width - 50 * 2,
+            H = self.height / 2 - 50 - 50 / 2
+        }
+    )
+
+    for i, value in ipairs(self.processor.memory) do
+        Slab.Text(string.format('%02x', value), { Color = i == self.processor.pointer and { 1, 0, 0 } or nil })
+        Slab.SameLine()
     end
 
     Slab.EndWindow()
