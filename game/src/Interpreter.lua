@@ -35,13 +35,16 @@ end
 -- リセット
 function Interpreter:reset()
     self.program = ''
-    self.counter = 1
-    self:setProcessor(self.processor)
+    self:resetCounter()
+    self:resetProcessor()
+    self.running = false
+    self.state = 'stop'
+    self.mode = 'step'
 end
 
 -- プロセッサの設定
-function Interpreter:setProcessor(processor)
-    self.processor = processor
+function Interpreter:resetProcessor(processor)
+    self.processor = processor or self.processor
     if self.processor then
         self.processor:reset()
     end
@@ -53,14 +56,19 @@ function Interpreter:load(program)
     self.program = program or ''
 end
 
--- プログラムカウンタを進める
-function Interpreter:next(n)
-    self.counter = self.counter + (n or 1)
+-- カウンターのリセット
+function Interpreter:resetCounter(counter)
+    self.counter = counter or 1
     if self.counter < 1 then
         self.counter = 1
     elseif self.counter > #self.program then
         self.counter = #self.program + 1
     end
+end
+
+-- プログラムカウンタを進める
+function Interpreter:next(n)
+    self:resetCounter(self.counter + (n or 1))
 end
 
 -- マッチ
@@ -81,7 +89,7 @@ function Interpreter:step()
         for op, word in pairs(self.operators) do
             if self:match(word) then
                 -- ワードが一致したら処理する
-                print(op, word)
+                --print(op, word)
                 self.processor:execute(op, self, word)
                 processed = true
                 break
@@ -96,10 +104,73 @@ function Interpreter:step()
 end
 
 -- 実行
-function Interpreter:run()
-    -- 最後まで処理する
-    while self.counter <= #self.program do
-        self:step()
+function Interpreter:run(mode)
+    self.mode = mode or 'start'
+    self.running = true
+    self.state = 'run'
+end
+
+-- 停止
+function Interpreter:stop()
+    self.running = false
+    self.state = 'stop'
+    self.mode = 'start'
+end
+
+-- トグル
+function Interpreter:toggle()
+    self.running = not self.running
+end
+
+-- バッファ更新
+function Interpreter:flush()
+    self.state = 'flush'
+end
+
+-- 入力待ち
+function Interpreter:waitToInput()
+    self.state = 'input'
+end
+
+-- データ入力
+function Interpreter:input(data, run)
+    self.processor:value(data)
+    if run then
+        self.state = 'run'
+    end
+end
+
+-- 更新
+function Interpreter:update()
+    if not self.running then
+        -- 実行しない
+    elseif self.state == 'input' then
+        -- 入力待ち
+    elseif self.mode == 'complete' then
+        -- 最後まで実行
+        while self.counter <= #self.program do
+            self:step()
+
+            if self.state == 'flush' then
+                -- バッファ更新のため一旦抜ける
+                self.state = 'run'
+                break
+            elseif self.state == 'input' then
+                -- 入力ため抜ける
+                break
+            end
+        end
+        if self.counter <= #self.program then
+            -- 一時中止
+        else
+            self:stop()
+        end
+    else
+        if self.counter <= #self.program then
+            self:step()
+        else
+            self:stop()
+        end
     end
 end
 

@@ -13,6 +13,7 @@ local Converter = require 'Converter'
 -- 初期化
 function Game:initialize(...)
     Application.initialize(self, ...)
+    self:debugInitialize()
 end
 
 -- 読み込み
@@ -22,93 +23,85 @@ function Game:load(...)
     -- スクリーンサイズ
     self.width, self.height = love.graphics.getDimensions()
 
-    -- Ook! 言語
-    local Ook = {
-        increment = 'Ook. Ook.',
-        decrement = 'Ook! Ook!',
-        backward = 'Ook? Ook.',
-        forward = 'Ook. Ook?',
-        output = 'Ook! Ook.',
-        input = 'Ook. Ook!',
-        open = 'Ook! Ook?',
-        close = 'Ook? Ook!',
-    }
-
-    -- けもフレ言語
-    local kemofre = {
-        increment = 'たーのしー',
-        decrement = 'すっごーい！',
-        backward = 'すごーい！',
-        forward = 'たのしー！',
-        output = 'なにこれなにこれ！',
-        input = 'おもしろーい！',
-        open = 'うわー！',
-        close = 'わーい！',
-    }
-
-    -- ヘイセイバー言語
-    local heisei = {
-        increment = 'ヘイ！',
-        decrement = 'ディディディディケイド！',
-        backward = '平成ライダーズ！',
-        forward = '仮面ライダーズ！',
-        output = 'セイ！',
-        input = 'ヘヘヘイ！',
-        open = 'フィニッシュタイム！',
-        close = 'アルティメットタイムブレイク！',
-    }
-
-    -- 変換先の言語
-    local lang = heisei
-
-    -- コンバータ
-    self.converter = Converter(lang)
-
     -- プロセッサ
     self.processor = Processor()
 
+    -- コンバーター
+    self.converter = Converter()
+
     -- インタプリタ
     self.interpreter = Interpreter()
-    self.interpreter:setProcessor(self.converter)
 
-    -- Brainfuck コードを、別言語コードへ変換
-    self.interpreter:load('+++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.>+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.')
-    self.interpreter:run()
-
-    -- プロセッサと命令セットを再設定
-    self.interpreter:setProcessor(self.processor)
-    self.interpreter.operators = lang
+    -- プロセッサと命令セットを設定
+    self.interpreter:resetProcessor(self.processor)
 
     -- プログラム
-    self.interpreter:load(self.converter.buffer)
+    self.interpreter:load()
 end
 
 -- 更新
 function Game:update(dt, ...)
+    self.interpreter:update()
+
+    if self.debugMode then
+        self:debugUpdate(dt)
+    end
 end
 
 -- 描画
 function Game:draw(...)
-    love.graphics.printf(
-        'counter: ' .. self.interpreter.counter
-        .. '\npointer: ' .. self.processor.pointer
-        .. '\n\nprogram:'
-        ,
-        self.font, 16, 16, self.width - 32)
-    love.graphics.printf(self.interpreter.program, self.font, 16, self.font:getHeight() * 4 + 16, self.width - 32, 'left')
-    love.graphics.printf(
-        'buffer:\n' .. self.processor.buffer,
-        self.font, 16, self.height * 0.5, math.min(self.font:getWidth('A') * 40, self.width - 32)
-    )
+    if self.debugMode then
+        self:debugDraw()
+    end
+end
+
+-- プログラム実行
+function Game:toggleProgram()
+    self.interpreter:toggle()
+end
+
+-- プログラム実行
+function Game:completeRunProgram()
+    self.interpreter:run('complete')
+end
+
+-- プログラムステップ実行
+function Game:stepProgram()
+    self.interpreter:stop()
+    self.interpreter:step()
+end
+
+-- 環境のリセット
+function Game:resetEnvironment()
+    self.interpreter:resetProcessor()
+    self.interpreter:resetCounter()
+end
+
+-- 環境のリセット
+function Game:newEnvironment()
+    self:resetEnvironment()
+    self.interpreter:load()
+end
+
+-- 入力待ちかどうか
+function Game:isWaitForInput()
+    return self.interpreter.state == 'input'
+end
+
+-- コンバート
+function Game:convert(op)
+    self:resetEnvironment()
+
+    self.converter.operators = op
+    self.interpreter:resetProcessor(self.converter)
+    self.interpreter:run()
+    self.interpreter:load(self.converter.buffer)
+    self.interpreter:resetProcessor(self.processor)
+    self.interpreter.operators = op
 end
 
 -- キー入力
 function Game:keypressed(key, scancode, isrepeat)
-    if key == 'space' then
-        self.interpreter:step()
-    elseif key == 'return' then
-        self.interpreter:run()
-    end
 end
 
 -- キー離した
@@ -117,6 +110,14 @@ end
 
 -- テキスト入力
 function Game:textinput(text)
+    if not self:isWaitForInput() then
+        -- 入力待ちではない
+    elseif text:match("%w") or text:match("%W") then
+        -- 入力可能な文字だったので入力
+        self.interpreter:input(text:byte(), true)
+    else
+        -- それ以外の文字
+    end
 end
 
 -- マウス入力
